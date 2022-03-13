@@ -5,6 +5,7 @@ const youtube = require("ytdl-core");
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require("fluent-ffmpeg");
 const convert = require("./utils/convert");
+const {v4: uuidv4} = require('uuid')
 ffmpeg.setFfmpegPath(ffmpegPath);
 
 
@@ -20,7 +21,8 @@ app.get("/", (req, res) => {
 
 app.get("/download", async (req, res) => {
     const info = await youtube.getInfo(req.query.url)
-    const name = info['player_response']['videoDetails']['title'].replace(" ", "-")
+    const name = uuidv4()
+    // info['player_response']['videoDetails']['title'].replace(" ", "-")
     const videoName = name + '.mp4';
     const audioName = name + '.mp3';
     const stream = await fs.createWriteStream(videoDir + videoName)
@@ -48,6 +50,7 @@ app.get("/download", async (req, res) => {
 
                 const filestream = fs.createReadStream(audioDir + audioName);
                 filestream.pipe(res);
+                fs.unlinkSync(audioDir + audioName)
                 filestream.on("error", (err) => {
                     console.log(err)
                 })
