@@ -1,7 +1,5 @@
-./node_modules
-./videos
-./audios
-./.idea
+videos/
+audios/
 node_modules/
 
 .idea/
