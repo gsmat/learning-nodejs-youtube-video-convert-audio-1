@@ -51,6 +51,7 @@ app.get("/download", async (req, res) => {
                 const filestream = fs.createReadStream(audioDir + audioName);
                 filestream.pipe(res);
                 fs.unlinkSync(audioDir + audioName)
+                res.redirect('/')
                 filestream.on("error", (err) => {
                     console.log(err)
                 })
