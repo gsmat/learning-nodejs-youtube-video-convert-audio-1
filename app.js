@@ -20,44 +20,50 @@ app.get("/", (req, res) => {
 });
 
 app.get("/download", async (req, res) => {
-    const info = await youtube.getInfo(req.query.url)
+    const url = req.query.url
+
+    // const info = await youtube.getInfo(req.query.url)
     const name = uuidv4()
     // info['player_response']['videoDetails']['title'].replace(" ", "-")
     const videoName = name + '.mp4';
     const audioName = name + '.mp3';
     const stream = await fs.createWriteStream(videoDir + videoName)
 
+    if (url === '') {
+        console.log('url Undefined')
+        res.redirect('/')
+    } else {
+        const yt = youtube(url)
+        yt.pipe(stream);
 
-    const yt = youtube(req.query.url)
-    yt.pipe(stream);
-
-    yt.on("error", (err) => {
-        console.log(err)
-    })
-
-    yt.on("data", (chunk) => {
-        console.log(chunk)
-    })
-
-    yt.on("end", () => {
-
-        convert(videoDir + videoName, audioDir + audioName, async err => {
-            if (!err) {
-                res.header({
-                    'Content-Disposition': 'attachment; filename=' + audioName
-                })
-                res.setHeader('Content-type', "audio/mp3");
-
-                const filestream = fs.createReadStream(audioDir + audioName);
-                filestream.pipe(res);
-                fs.unlinkSync(audioDir + audioName)
-                res.redirect('/')
-                filestream.on("error", (err) => {
-                    console.log(err)
-                })
-            }
+        yt.on("error", (err) => {
+            console.log(err)
         })
-    })
+
+        yt.on("data", (chunk) => {
+            console.log(chunk)
+        })
+
+        yt.on("end", () => {
+
+            convert(videoDir + videoName, audioDir + audioName, async err => {
+                if (!err) {
+                    res.header({
+                        'Content-Disposition': 'attachment; filename=' + audioName
+                    })
+                    res.setHeader('Content-type', "audio/mp3");
+
+                    const filestream = fs.createReadStream(audioDir + audioName);
+                    filestream.pipe(res);
+                    fs.unlinkSync(audioDir + audioName)
+                    res.redirect('/')
+                    filestream.on("error", (err) => {
+                        console.log(err)
+                    })
+                }
+            })
+        })
+    }
 
 
 })
